@@ -38,17 +38,18 @@ public class listviewadapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         view = inflater.inflate(R.layout.listview_item,viewGroup,false);
-        TextView id,name,phone;
+        TextView id,name,subject,expertise;
         id = (TextView) view.findViewById(R.id.ID);
         name = (TextView) view.findViewById(R.id.Name);
-        phone = (TextView) view.findViewById(R.id.Phone);
+        subject = (TextView) view.findViewById(R.id.Subject);
+        expertise=(TextView) view.findViewById(R.id.expertise);
         Contact c=userlist1.get(i);
 
 
-        id.setText(Integer.toString(c.getID()));
+        id.setText(c.getID());
         name.setText(c.getName());
-        phone.setText(c.getPhoneNumber());
-
+        subject.setText(c.getSubject());
+        expertise.setText(c.getExpertise());
         return view;
     }
 

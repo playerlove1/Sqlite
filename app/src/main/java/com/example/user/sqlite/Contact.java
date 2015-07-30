@@ -5,33 +5,36 @@ package com.example.user.sqlite;
  */
 public class Contact {
     //private variables
-    int _id;
+    String _id;
     String _name;
-    String _phone_number;
+
+    String _subject;
+    String _expertise;
 
     // Empty constructor
     public Contact(){
 
     }
     // constructor
-    public Contact(int id, String name, String _phone_number){
+    public Contact(String id, String name, String subject,String expertise){
         this._id = id;
         this._name = name;
-        this._phone_number = _phone_number;
+        this._subject=subject;
+        this._expertise=expertise;
     }
 
     // constructor
-    public Contact(String name, String _phone_number){
+    public Contact(String name){
         this._name = name;
-        this._phone_number = _phone_number;
+
     }
     // getting ID
-    public int getID(){
+    public String getID(){
         return this._id;
     }
 
     // setting id
-    public void setID(int id){
+    public void setID(String id){
         this._id = id;
     }
 
@@ -45,13 +48,25 @@ public class Contact {
         this._name = name;
     }
 
-    // getting phone number
-    public String getPhoneNumber(){
-        return this._phone_number;
+    // getting subject
+    public String getSubject(){
+        return this._subject;
+    }
+
+    // setting SUBJECT
+    public void setSubject(String subject){
+        this._subject = subject;
+    }
+
+    // getting subject
+    public String getExpertise(){
+        return this._expertise;
     }
 
     // setting phone number
-    public void setPhoneNumber(String phone_number){
-        this._phone_number = phone_number;
+    public void setExpertise(String expertise){
+        this._expertise = expertise;
     }
+
+
 }
