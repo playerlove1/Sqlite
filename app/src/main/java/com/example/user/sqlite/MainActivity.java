@@ -158,16 +158,6 @@ public class MainActivity extends Activity {
                 mRegisterTask.execute(null, null, null);
             }
         }
-        /**
-         * CRUD Operations
-         * */
-        // Inserting Contacts
-   //     Log.d("Insert: ", "Inserting ..");
-
-
-        // Reading all contacts
-
-
     }
 
 
@@ -183,7 +173,6 @@ public class MainActivity extends Activity {
                     String log = "Id: " + cn.getID() + " ,Name: " + cn.getName() + " ,Subject: " + cn.getSubject()+",Expertise"+cn.getExpertise();
                     // Writing Contacts to log
                     Log.d("Name: ", log);
-
                 }
                 userlist.setAdapter(new listviewadapter(MainActivity.this,contacts));
                 break;
@@ -192,9 +181,7 @@ public class MainActivity extends Activity {
            //     Intent bindIntent = new Intent(this, GCMIntentService.class);
           //      bindService(bindIntent, connection, BIND_AUTO_CREATE);
                 break;
-
         }
-
     }
 
     /**
@@ -212,7 +199,6 @@ public class MainActivity extends Activity {
              * depending upon your app requirement
              * For now i am just displaying it on the screen
              * */
-
             // Showing received message
            lblMessage.setText("訊息:"+newMessage );
             Toast.makeText(getApplicationContext(), "New Message: " + newMessage, Toast.LENGTH_LONG).show();
