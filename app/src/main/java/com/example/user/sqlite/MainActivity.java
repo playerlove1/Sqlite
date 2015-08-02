@@ -14,11 +14,18 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.example.user.sqlite.app.MySingleton;
+import com.example.user.sqlite.volley.utils.Const;
+import com.example.user.sqlite.volley.utils.JsonArrayPostRequest;
 import com.google.android.gcm.GCMRegistrar;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
+import java.util.HashMap;
 import java.util.List;
+
 
 import static com.example.user.sqlite.CommonUtilities.DISPLAY_MESSAGE_ACTION;
 import static com.example.user.sqlite.CommonUtilities.EXTRA_MESSAGE;
@@ -26,68 +33,12 @@ import static com.example.user.sqlite.CommonUtilities.SENDER_ID;
 public class MainActivity extends Activity {
  //   private GCMIntentService.MyBinder myBinder;
     private static final String TAG =MainActivity.class.getSimpleName();
-    /*   asyncTask    的類別      */
-    class MyTask extends AsyncTask<String, Integer, String > {
-        private Context mContext;
-        private ProgressDialog mDialog_loading;
-        public MyTask(Context mContext) {
-            this.mContext = mContext;
-        }
-        @Override
-        protected void onPreExecute() { //執行前
-            super.onPreExecute();
-            mDialog_loading = new ProgressDialog(mContext);
-            mDialog_loading.setMessage("Loading data....");
-            mDialog_loading.setCancelable(false);
-            mDialog_loading.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            mDialog_loading.setMax(100);
-            mDialog_loading.show();
-        }
-        @Override
-        protected String doInBackground(String... param) {
-
-            try{
-                String result = DBConnector.executeQuery("SELECT * FROM doctor"); //發送queryt取得資料
-                JSONArray jsonArray = new JSONArray(result);  //接收回傳結果 (病人)
-                int total=jsonArray.length();    //共有幾個病人
-
-                for(int i = 0; i < total; i++) { //依序取出並設並各病人詳細的資料
-                    JSONObject jsonData = jsonArray.getJSONObject(i);
-                    Log.d("Asynctask_background","取得name:"+jsonData.getString("dname") );
-
-                    DatabaseHandler db = new DatabaseHandler(mContext);
-                    db.addContact(new Contact(jsonData.getString("did"),jsonData.getString("dname"),jsonData.getString("subject"),jsonData.getString("expertise")));
-                    publishProgress((int) ((i / (float) (total)) * 100));  //更新進度條
-                }
-
-            } catch(Exception e) {
-                Log.e("log_asynctask", e.toString());
-            }
-            return "";
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... progress) {
-            super.onProgressUpdate(progress);
-            mDialog_loading.setProgress(progress[0]);
-        }
-        @Override
-        protected void onPostExecute(String s) {
-            mDialog_loading.dismiss();
-            super.onPostExecute(s);
-
-            Log.d("task","結束 ");
-        }
-    }
-
-
 
     ListView userlist;
     ArrayAdapter listAdapter;
     TextView lblMessage;
     // Asyntask
     AsyncTask<Void, Void, Void> mRegisterTask;
-
     // Alert dialog manager
     AlertDialogManager alert = new AlertDialogManager();
 
@@ -95,6 +46,12 @@ public class MainActivity extends Activity {
     ConnectionDetector cd;
     public static String name="fong";
     public static String email="kos83611@gmail.com";
+
+    private ProgressDialog pDialog;
+
+    // These tags will be used to cancel the requests
+    private String tag_json_obj = "jobj_req", tag_json_arry = "jarray_req";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -158,8 +115,71 @@ public class MainActivity extends Activity {
                 mRegisterTask.execute(null, null, null);
             }
         }
+
+        pDialog = new ProgressDialog(this);
+        pDialog.setMessage("Loading...");
+        pDialog.setCancelable(false);
+
     }
 
+    private void showProgressDialog() {
+        if (!pDialog.isShowing())
+            pDialog.show();
+    }
+
+    private void hideProgressDialog() {
+        if (pDialog.isShowing())
+            pDialog.hide();
+    }
+
+
+    private void praseJsonarray(JSONArray jsonArray)
+    {
+        int total=jsonArray.length();    //共有幾個病人
+        for(int i = 0; i < total; i++) { //依序取出並設並各病人詳細的資料
+           try {
+               JSONObject jsonData = jsonArray.getJSONObject(i);
+               DatabaseHandler db = new DatabaseHandler(this);
+               db.addContact(new Contact(jsonData.getString("did"), jsonData.getString("dname"), jsonData.getString("subject"), jsonData.getString("expertise")));
+
+           }
+         catch(Exception e) {
+        Log.e("praseJson", e.toString());
+    }
+        }
+
+
+    }
+
+
+    private void makeJsonArryReq() {
+
+        showProgressDialog();
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("query_string", "select * from doctor where sync=0");
+        JsonArrayPostRequest req = new JsonArrayPostRequest (Const.URL_JSON_ARRAY,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        Log.d(TAG, response.toString());
+                      //  msgResponse.setText(response.toString());
+                        praseJsonarray(response);
+                        hideProgressDialog();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.d(TAG, "Error: " + error.getMessage());
+                hideProgressDialog();
+            }
+        },params);
+
+        // Adding request to request queue
+        MySingleton.getInstance(this).addToRequestQueue(req);
+
+
+
+    }
 
     public void show(View view)
     {
@@ -177,6 +197,7 @@ public class MainActivity extends Activity {
                 userlist.setAdapter(new listviewadapter(MainActivity.this,contacts));
                 break;
             case R.id.look:
+                makeJsonArryReq();
               //new MyTask(this).execute("null");
            //     Intent bindIntent = new Intent(this, GCMIntentService.class);
           //      bindService(bindIntent, connection, BIND_AUTO_CREATE);

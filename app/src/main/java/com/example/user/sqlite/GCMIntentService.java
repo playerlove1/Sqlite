@@ -82,9 +82,6 @@ public class GCMIntentService extends GCMBaseIntentService {
                 }
             }.run();
                 break;
-          default:
-
-              break;
         }
     }
 
